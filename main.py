@@ -1,124 +1,115 @@
 import string
 import random
-from random import randint, choice
 from tkinter import *
-import os
+from tkinter import messagebox
 
+# Colors
+COLOR_BG = '#1E1E2E'
+COLOR_CARD = '#313244'
+COLOR_TEXT = '#CDD6F4'
+COLOR_ACCENT = '#89B4FA'
+COLOR_GENERATE = '#A6E3A1'
+COLOR_DANGER = '#F38BA8'
+COLOR_ENTRY_BG = '#11111B'
 
+def generate_password():
+    try:
+        length = length_slider.get()
+        chars = string.ascii_lowercase
+        if var_upper.get(): chars += string.ascii_uppercase
+        if var_nums.get():  chars += string.digits
+        if var_syms.get():  chars += string.punctuation
+        if not chars:
+            messagebox.showwarning("Erreur", "Sélectionne au moins une option !")
+            return
+        password = random.choice(string.ascii_letters) + "".join(random.choice(chars) for _ in range(length))
+        pass_entry.config(state='normal')
+        pass_entry.delete(0, END)
+        pass_entry.insert(0, password)
+        pass_entry.config(state='readonly') 
+        with open("passwords", "a+") as file:
+            file.write(f"ans : {password}\n")
 
-                                                                               
-# variable
-fronttext = f"PASSWORLD generator "+ "1.0.0"
-bgcolor= '#413E44'
+    except Exception as e:
+        messagebox.showerror("Erreur", f"Erreur : {e}")
 
-# fonction
-def ERREUR_LOGIN(erreur_message):
-    #errorlogin
-    windows = Tk()
-    windows.title("ERROR")
-    windows.geometry("502x126")
-    windows.maxsize(502, 126)
-    windows.minsize(502, 126)
-    #windows.iconbitmap("icone.ico.ico")
-    windows.config(background='white')
-    frame = Frame(windows,bg='white', bd=1, relief=SUNKEN  )
-    label_error = Label(frame, text="ERROR: function {generate_opt} is not call, please call the administrator if is an error", font=("Arial", 10),bg='white', fg='Red' )
-    label_error.pack()
-    frame.pack(expand=YES)
-    windows.mainloop()
+def copy_to_clipboard():
+    password = pass_entry.get()
+    if password:
+        windows.clipboard_clear()
+        windows.clipboard_append(password)
+        # Feedback
+        messagebox.showinfo("Copié", "Mot de passe envoyé dans le presse-papier !")
 
+# Effects
+def on_enter(e):
+    e.widget['background'] = '#45475A'
 
-def Generateur_script():
-    #générer code
-    password_min = 6
-    password_max = 12
-    all_char = string.ascii_letters + string.punctuation + string.digits
-    letters_char = string.ascii_letters
-    password= choice(letters_char) + "".join(choice(all_char) for x in range(randint(password_min, password_max - 1)-1)) 
-    pass_entry.delete(0,END)
-    pass_entry.insert(0,password)
-    # open file
-    with open("password.pass","a+") as file:
-        file.write("ans= "+ str(password)+"\n")
-        file.close()
-
-
-
-def reset_entry():
-    pass_entry.delete(0,END)
-
-def generate_opt():
-    all_char = string.ascii_letters + string.digits
-
-#windows
-windows = Tk()
-windows.title("Passworld generator")
-windows.geometry("802x430")
-# windows.iconbitmap('icone.ico')
-windows.config(background=bgcolor)
-
-def read():
-    net = 1
-    with open("password.pass", "a+") as file:
-       net = file.read()
-    if net == str(file.read):
-            print("True")
+def on_leave(e):
+    if e.widget.cget('text') == "GÉNÉRER":
+        e.widget['background'] = COLOR_GENERATE
+    elif e.widget.cget('text') == "RESET":
+        e.widget['background'] = COLOR_DANGER
     else:
-            print("False")
-            print(net)
+        e.widget['background'] = COLOR_ACCENT
 
-read()
-# frame_main
-frame_main = Frame(windows, bg=bgcolor, bd=1, relief=SUNKEN  )
+# Root
+windows = Tk()
+windows.title("PassGen Modern v2.1")
+windows.geometry("450x600")
+windows.configure(bg=COLOR_BG)
 
+# Container
+main_frame = Frame(windows, bg=COLOR_BG)
+main_frame.pack(expand=YES, fill=BOTH, padx=30, pady=30)
 
-#labeltitle
+# Title
+Label(main_frame, text="PASSWORD", font=("Segoe UI", 24, "bold"), bg=COLOR_BG, fg=COLOR_ACCENT).pack()
+Label(main_frame, text="GENERATOR", font=("Segoe UI", 14), bg=COLOR_BG, fg=COLOR_TEXT).pack(pady=(0, 20))
 
+# Result
+pass_entry = Entry(main_frame, font=("Consolas", 18), bg=COLOR_ENTRY_BG, fg=COLOR_GENERATE, bd=0, justify='center', insertbackground=COLOR_TEXT, state='readonly')
+pass_entry.pack(fill=X, pady=10, ipady=10)
 
-label_title = Label(frame_main, text="PASSWORLD GENERATOR "+ "1.0.0",background=bgcolor, font=("helvestica",20), bg= bgcolor, fg='white')
+# Settings
+settings_card = Frame(main_frame, bg=COLOR_CARD, bd=0, padx=20, pady=20)
+settings_card.pack(fill=X, pady=20)
 
-#Fird frame
-fird_frame = Frame(frame_main, bg=bgcolor, bd=1, relief=SUNKEN)
-#sous frame
-second_frame = Frame(frame_main, bg=bgcolor, bd=1, relief=SUNKEN)
+# Lenght
+Label(settings_card, text="Longueur du mot de passe", bg=COLOR_CARD, fg=COLOR_TEXT, font=("Segoe UI", 10)).pack(anchor=W)
+length_slider = Scale(settings_card, from_=8, to=32, orient=HORIZONTAL, bg=COLOR_CARD, fg=COLOR_ACCENT, highlightthickness=0, troughcolor=COLOR_BG, bd=0)
+length_slider.set(16)
+length_slider.pack(fill=X, pady=(0, 15))
 
+# Options
+options_frame = Frame(settings_card, bg=COLOR_CARD)
+options_frame.pack(fill=X)
 
-#imput
-pass_entry = Entry(second_frame,background=bgcolor, font=("helvestica",20), bg= 'white', fg='black')
+var_upper = IntVar(value=1)
+var_nums = IntVar(value=1)
+var_syms = IntVar(value=1)
 
+def styled_check(text, variable):
+    return Checkbutton(options_frame, text=text, variable=variable, bg=COLOR_CARD, fg=COLOR_TEXT, activebackground=COLOR_CARD, activeforeground=COLOR_ACCENT,selectcolor=COLOR_BG, bd=0, font=("Segoe UI", 10))
 
-#button generator
-pass_botton = Button(fird_frame,text="GENERER",background=bgcolor, font=("helvestica",20), fg='white',command=Generateur_script)
+styled_check("Inclure Majuscules", var_upper).pack(anchor=W)
+styled_check("Inclure Chiffres", var_nums).pack(anchor=W)
+styled_check("Inclure Symboles", var_syms).pack(anchor=W)
 
-#menubar
-menu_bar = Menu(windows, bg=bgcolor)
+# Buttons
+btn_style = {"font": ("Segoe UI", 11, "bold"), "fg": COLOR_BG, "bd": 0, "cursor": "hand2", "activeforeground": "white"}
 
+btn_gen = Button(main_frame, text="GÉNÉRER", bg=COLOR_GENERATE, **btn_style, command=generate_password)
+btn_gen.pack(fill=X, pady=(10, 5), ipady=8)
 
-#fenetre 1 menu
-file_menu_option = Menu(menu_bar, tearoff=0)
-file_menu_option.add_command(label="option_géneration", command= ERREUR_LOGIN)
-file_menu= Menu(menu_bar, tearoff=0)
-file_menu.add_command(label="NOUVEAU", command=Generateur_script)
-file_menu.add_command(label="RESET", command=reset_entry)
-file_menu.add_command(label="QUITTER", command=windows.quit)
-menu_bar.add_cascade(label="Fichier", menu=file_menu)
-menu_bar.add_cascade(label="Option", menu= file_menu_option)
+btn_copy = Button(main_frame, text="COPIER", bg=COLOR_ACCENT, **btn_style, command=copy_to_clipboard)
+btn_copy.pack(fill=X, pady=5, ipady=8)
 
+btn_reset = Button(main_frame, text="RESET", bg=COLOR_DANGER, **btn_style, command=lambda: [pass_entry.config(state='normal'), pass_entry.delete(0, END), pass_entry.config(state='readonly')])
+btn_reset.pack(fill=X, pady=5, ipady=8)
 
-#configurer windows
-windows.config(menu=menu_bar)
+for btn in [btn_gen, btn_copy, btn_reset]:
+    btn.bind("<Enter>", on_enter)
+    btn.bind("<Leave>", on_leave)
 
-
-#package
-
-fird_frame.grid(row=1,column=2,sticky=W)
-second_frame.grid(row=0,column=2,sticky=W)
-pass_botton.pack(side=BOTTOM, fill=X)
-pass_entry.pack()
-frame_main.pack(expand=YES)
-label_title.grid(row=0,column=1,sticky=W)
-
-
-
-#windows
 windows.mainloop()
