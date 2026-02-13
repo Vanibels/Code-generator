@@ -1,7 +1,6 @@
 import string
 import random
 from random import randint, choice
-import tkinter
 from tkinter import *
 import os
 
@@ -20,7 +19,7 @@ def ERREUR_LOGIN(erreur_message):
     windows.geometry("502x126")
     windows.maxsize(502, 126)
     windows.minsize(502, 126)
-    windows.iconbitmap("icone.ico.ico")
+    #windows.iconbitmap("icone.ico.ico")
     windows.config(background='white')
     frame = Frame(windows,bg='white', bd=1, relief=SUNKEN  )
     label_error = Label(frame, text="ERROR: function {generate_opt} is not call, please call the administrator if is an error", font=("Arial", 10),bg='white', fg='Red' )
@@ -34,7 +33,8 @@ def Generateur_script():
     password_min = 6
     password_max = 12
     all_char = string.ascii_letters + string.punctuation + string.digits
-    password= "" .join(choice(all_char) for x in range(randint(password_min, password_max)))
+    letters_char = string.ascii_letters
+    password= choice(letters_char) + "".join(choice(all_char) for x in range(randint(password_min, password_max - 1)-1)) 
     pass_entry.delete(0,END)
     pass_entry.insert(0,password)
     # open file
@@ -42,7 +42,6 @@ def Generateur_script():
         file.write("ans= "+ str(password)+"\n")
         file.close()
 
-    
 
 
 def reset_entry():
